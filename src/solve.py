@@ -3,7 +3,7 @@ import random
 
 
 def cross(A, B):
-    "Cross product of elements in A and elements in B."
+    """Cross product of elements in A and elements in B."""
     return [a + b for a in A for b in B]
 
 
@@ -17,22 +17,22 @@ unitlist = (
     + [cross(rs, cs) for rs in ("ABC", "DEF", "GHI") for cs in ("123", "456", "789")]
 )
 units = dict((s, [u for u in unitlist if s in u]) for s in squares)
-peers = dict((s, set(sum(units[s], [])) - set([s])) for s in squares)
+peers = dict((s, set(sum(units[s], [])) - {s}) for s in squares)
 
 
 def parse_grid(grid):
     """Convert grid to a dict of possible values, {square: digits}, or
     return False if a contradiction is detected."""
-    ## To start, every square can be any digit; then assign values from the grid.
+    # To start, every square can be any digit; then assign values from the grid.
     values = dict((s, digits) for s in squares)
     for s, d in grid_values(grid).items():
         if d in digits and not assign(values, s, d):
-            return False  ## (Fail if we can't assign d to square s.)
+            return False  # (Fail if we can't assign d to square s.)
     return values
 
 
 def grid_values(grid):
-    "Convert grid into a dict of {square: char} with '0' or '.' for empties."
+    """Convert grid into a dict of {square: char} with '0' or '.' for empties."""
     chars = [c for c in grid if c in digits or c in "0."]
     assert len(chars) == 81
     return dict(zip(squares, chars))
@@ -65,7 +65,7 @@ def eliminate(values, s, d):
     for u in units[s]:
         dplaces = [s for s in u if d in values[s]]
         if len(dplaces) == 0:
-            return False  ## Contradiction: no place for this value
+            return False  # Contradiction: no place for this value
         elif len(dplaces) == 1:
             # d can only be in one place in unit; assign it there
             if not assign(values, dplaces[0], d):
@@ -119,13 +119,13 @@ def solve_all(grids, name="", showif=0.0):
         start = time.process_time()
         values = solve(grid)
         t = time.process_time() - start
-        ## Display puzzles that take long enough
+        # Display puzzles that take long enough
         if showif is not None and t > showif:
             display(grid_values(grid))
             if values:
                 display(values)
             print("(%.2f seconds)\n" % t)
-        return (t, solved(values))
+        return t, solved(values)
 
     times, results = zip(*[time_solve(grid) for grid in grids])
     N = len(grids)
@@ -137,7 +137,7 @@ def solve_all(grids, name="", showif=0.0):
 
 
 def solved(values):
-    "A puzzle is solved if each unit is a permutation of the digits 1 to 9."
+    """A puzzle is solved if each unit is a permutation of the digits 1 to 9."""
 
     def unitsolved(unit):
         return set(values[s] for s in unit) == set(digits)
@@ -146,7 +146,7 @@ def solved(values):
 
 
 def from_file(filename, sep="\n"):
-    "Parse a file into a list of strings, separated by sep."
+    """Parse a file into a list of strings, separated by sep."""
     return open(filename).read().strip().split(sep)
 
 
@@ -161,11 +161,11 @@ def random_puzzle(N=17):
         ds = [values[s] for s in squares if len(values[s]) == 1]
         if len(ds) >= N and len(set(ds)) >= 8:
             return "".join(values[s] if len(values[s]) == 1 else "." for s in squares)
-    return random_puzzle(N)  ## Give up and make a new puzzle
+    return random_puzzle(N)  # Give up and make a new puzzle
 
 
 def shuffled(seq):
-    "Return a randomly shuffled copy of the input sequence."
+    """Return a randomly shuffled copy of the input sequence."""
     seq = list(seq)
     random.shuffle(seq)
     return seq
@@ -176,8 +176,9 @@ if __name__ == "__main__":
     # grid1 = '003020600900305001001806400008102900700000008006708200002609500800203009005010300'
     # grid1 = "1..7.896.6........2.86.1.74.1.3...96......2..824..675...289...138.52........63..."
     grid1 = "4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......"
+    hard1 = ".....6....59.....82....8....45........3........6..3.54...325..6.................."
 
-    # display(solve(grid1))
     solve_all(from_file("src/95hard.txt"), "hard", None)
     solve_all(from_file("src/hardest.txt"), "hard", None)
     solve_all([random_puzzle() for _ in range(99)], "random", 100.0)
+    # solve_all([hard1])
